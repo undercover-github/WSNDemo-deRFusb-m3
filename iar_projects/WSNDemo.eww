@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<workspace>
+  <batchBuild/>
+  <project>
+    <path>$WS_DIR$\RF231USBRD.ewp</path>
+  </project>
+  <project>
+    <path>$WS_DIR$\SAM3S_EK.ewp</path>
+  </project>
+</workspace>
