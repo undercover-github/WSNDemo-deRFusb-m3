@@ -34,7 +34,7 @@
 ******************************************************************************/
 bool appCoordinatorIdentifyCmdHandler(AppCommand_t *pCommand);
 bool appCoordinatorNwkInfoCmdHandler(AppCommand_t *pCommand);
-bool appCoordRelaysCtrlCmdHandler(AppCommand_t *pCommand);
+bool appCoordCustomMsgCmdHandler(AppCommand_t *pCommand);
 
 /******************************************************************************
                               Constants section
@@ -46,7 +46,7 @@ PROGMEM_DECLARE(AppCommandDescriptor_t appCoordinatorCmdDescTable[]) =
 {
   APP_COMMAND_DESCRIPTOR(APP_NETWORK_INFO_COMMAND_ID, appCoordinatorNwkInfoCmdHandler),
   APP_COMMAND_DESCRIPTOR(APP_IDENTIFY_COMMAND_ID, appCoordinatorIdentifyCmdHandler),
-  APP_COMMAND_DESCRIPTOR(APP_RELAYS_CTRL_ID, appCoordRelaysCtrlCmdHandler)
+  APP_COMMAND_DESCRIPTOR(APP_CUSTOM_MSG_ID, appCoordCustomMsgCmdHandler)
 };
 
 /*****************************************************************************
@@ -95,7 +95,7 @@ static void appCoordinatorTaskHandler(void)
 
       if (appCreateCommand(&pCommand))
       {
-        pCommand->id = APP_NETWORK_INFO_COMMAND_ID;
+        pCommand->dongleCommandId = APP_NETWORK_INFO_COMMAND_ID;
         memcpy(&pCommand->payload.nwkInfo, &appNwkInfo, sizeof(AppNwkInfoCmdPayload_t));
       }
 
@@ -199,7 +199,7 @@ static void deviceTimerFired(void)
 bool appCoordinatorNwkInfoCmdHandler(AppCommand_t *pCommand)
 {
   visualizeSerialTx();
-  appSendMessageToUsart(pCommand, sizeof(AppNwkInfoCmdPayload_t) + sizeof(pCommand->id));
+  appSendMessageToUsart(pCommand, sizeof(AppNwkInfoCmdPayload_t) + sizeof(pCommand->dongleCommandId));
 
   return true;
 }
@@ -221,10 +221,10 @@ bool appCoordinatorIdentifyCmdHandler(AppCommand_t *pCommand)
     appStartIdentifyVisualization(pCommand->payload.identify.blinkDurationMs, 
                                   pCommand->payload.identify.blinkPeriodMs);
 
-    pCommand->id = APP_IDENTIFY_NOTF_COMMAND_ID;
+    pCommand->dongleCommandId = APP_IDENTIFY_NOTF_COMMAND_ID;
     pCommand->payload.identifyNotf.status = APS_SUCCESS_STATUS;
     pCommand->payload.identifyNotf.srcAddress = appNwkInfo.extAddr;
-    appSendMessageToUsart(pCommand, sizeof(AppIdentifyNotfPayload_t) + sizeof(pCommand->id));
+    appSendMessageToUsart(pCommand, sizeof(AppIdentifyNotfPayload_t) + sizeof(pCommand->dongleCommandId));
     visualizeSerialTx();
   }
   else
@@ -241,7 +241,7 @@ bool appCoordinatorIdentifyCmdHandler(AppCommand_t *pCommand)
       pMsgParams->dstEndpoint             = 1;
       pMsgParams->clusterId               = CPU_TO_LE16(1);
       pMsgParams->srcEndpoint             = WSNDEMO_ENDPOINT;
-      pMsgParams->asduLength              = sizeof(AppIdentifyReqPayload_t) + sizeof(pCommand->id);
+      pMsgParams->asduLength              = sizeof(AppIdentifyReqPayload_t) + sizeof(pCommand->dongleCommandId);
       pMsgParams->txOptions.acknowledgedTransmission = 1;
 #ifdef _APS_FRAGMENTATION_
       pMsgParams->txOptions.fragmentationPermitted = 1;
@@ -261,10 +261,10 @@ bool appCoordinatorIdentifyCmdHandler(AppCommand_t *pCommand)
   return delCmdNeeded;
 }
 
-bool appCoordRelaysCtrlCmdHandler(AppCommand_t *pCommand)
+bool appCoordCustomMsgCmdHandler(AppCommand_t *pCommand)
 {
 	  bool delCmdNeeded = true;
-	  bool thisIsDestination = (pCommand->payload.relaysCtrl.dstAddress == appNwkInfo.extAddr);
+	  bool thisIsDestination = (pCommand->payload.customMsg.dstAddress == appNwkInfo.extAddr);
 
 	  if (thisIsDestination)
 	  {
@@ -280,11 +280,11 @@ bool appCoordRelaysCtrlCmdHandler(AppCommand_t *pCommand)
 
 	      pMsgParams->profileId               = CCPU_TO_LE16(WSNDEMO_PROFILE_ID);
 	      pMsgParams->dstAddrMode             = APS_EXT_ADDRESS;
-	      pMsgParams->dstAddress.extAddress   = pCommand->payload.relaysCtrl.dstAddress;
+	      pMsgParams->dstAddress.extAddress   = pCommand->payload.customMsg.dstAddress;
 	      pMsgParams->dstEndpoint             = 1;
 	      pMsgParams->clusterId               = CPU_TO_LE16(1);
 	      pMsgParams->srcEndpoint             = WSNDEMO_ENDPOINT;
-	      pMsgParams->asduLength              = sizeof(AppIdentifyReqPayload_t) + sizeof(pCommand->id);
+	      pMsgParams->asduLength              = sizeof(AppIdentifyReqPayload_t) + sizeof(pCommand->dongleCommandId);
 	      pMsgParams->txOptions.acknowledgedTransmission = 1;
 	#ifdef _APS_FRAGMENTATION_
 	      pMsgParams->txOptions.fragmentationPermitted = 1;
@@ -311,14 +311,14 @@ bool appCoordRelaysCtrlCmdHandler(AppCommand_t *pCommand)
 ******************************************************************************/
 static void appCoordinatorConfirmHandler(AppCmdHandlerTxFrame_t *txFrame)
 {
-  if (APP_IDENTIFY_COMMAND_ID == txFrame->cmdFrame.command.id)
+  if (APP_IDENTIFY_COMMAND_ID == txFrame->cmdFrame.command.dongleCommandId)
   {
     AppCommand_t *pCommand = &txFrame->cmdFrame.command;
 
-    pCommand->id = APP_IDENTIFY_NOTF_COMMAND_ID;
+    pCommand->dongleCommandId = APP_IDENTIFY_NOTF_COMMAND_ID;
     pCommand->payload.identifyNotf.status = txFrame->msgParams.confirm.status;
     pCommand->payload.identifyNotf.srcAddress = txFrame->msgParams.dstAddress.extAddress;
-    appSendMessageToUsart(pCommand, sizeof(AppIdentifyNotfPayload_t) + sizeof(pCommand->id));
+    appSendMessageToUsart(pCommand, sizeof(AppIdentifyNotfPayload_t) + sizeof(pCommand->dongleCommandId));
     visualizeSerialTx();
   }
 }

@@ -112,7 +112,7 @@ static void appEndDeviceTaskHandler(void)
 
       if (appCreateCommand(&pCommand))
       {
-        pCommand->id = APP_NETWORK_INFO_COMMAND_ID;
+        pCommand->dongleCommandId = APP_NETWORK_INFO_COMMAND_ID;
         memcpy(&pCommand->payload.nwkInfo, &appNwkInfo, sizeof(AppNwkInfoCmdPayload_t));
       }
 
@@ -266,7 +266,7 @@ bool appEndDeviceNwkInfoCmdHandler(AppCommand_t *pCommand)
     pMsgParams->dstEndpoint             = 1;
     pMsgParams->clusterId               = CPU_TO_LE16(1);
     pMsgParams->srcEndpoint             = WSNDEMO_ENDPOINT;
-    pMsgParams->asduLength              = sizeof(AppNwkInfoCmdPayload_t) + sizeof(pCommand->id);
+    pMsgParams->asduLength              = sizeof(AppNwkInfoCmdPayload_t) + sizeof(pCommand->dongleCommandId);
     pMsgParams->txOptions.acknowledgedTransmission = 1;
 #ifdef _APS_FRAGMENTATION_
     pMsgParams->txOptions.fragmentationPermitted = 1;

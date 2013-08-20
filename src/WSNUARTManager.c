@@ -262,25 +262,6 @@ static void readByteEvent(uint16_t bytesReceived)
         {
           appPcCmdReceived(usartRx.strippedCmd, usartRx.por - usartRx.strippedCmd);
         }
-/* Uncomment to handle single bytes and send them to device
-//    	appSendMessageToUsart2(&byte, 1);
-//
-//        AppCommand_t command;
-//        command.id=APP_RELAYS_CTRL_ID;
-//        command.payload.relaysCtrl.dstAddress=0x000000000000000E;
-//        command.payload.relaysCtrl.relayNumber = 3;
-//
-//        if(byte == '0')
-//        {
-//        	command.payload.relaysCtrl.relayState = 0;
-//        }
-//        else
-//        {
-//        	command.payload.relaysCtrl.relayState = 1;
-//        }
-//
-//        appPcCmdReceived(&command, 0);
-*/
         resetUsartRx();
         return;
 

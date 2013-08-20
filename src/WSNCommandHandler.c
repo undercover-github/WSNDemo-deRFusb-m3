@@ -96,7 +96,7 @@ void appCmdHandler(void)
     bool deleteCmd = true;
     AppCommandDescriptor_t cmdDesc;
 
-    if (appGetCmdDescriptor(&cmdDesc, currentCommand->id))
+    if (appGetCmdDescriptor(&cmdDesc, currentCommand->dongleCommandId))
     {
       deleteCmd = cmdDesc.serviceVector(currentCommand);
     }
